@@ -1,1 +1,3 @@
 ConfigReader
+
+todo add destructor
