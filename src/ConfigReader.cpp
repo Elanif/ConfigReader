@@ -1,5 +1,4 @@
 #include "ConfigReader.hpp"
-#include<functional>
 #include<iostream>
 #include<regex>
 
