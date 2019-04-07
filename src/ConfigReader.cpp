@@ -137,6 +137,7 @@ bool ConfigReader::open(const std::string& file_location) {
         line_vector.push_back(line);
     }
     elaborate();
+    close();
     return is_loaded;
 }
 
