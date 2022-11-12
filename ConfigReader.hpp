@@ -5,82 +5,54 @@
 #include<vector>
 #include<tuple>
 #include<fstream>
-/*
-template <class T1, class T2>
-struct SameType
-{
-    static const bool value = false;
-};
-
-template<class T>
-struct SameType<T, T>
-{
-    static const bool value = true;
-};
-
-template <typename... Types>
-class VectorHolder
-{
-private:
-    typedef std::tuple<std::vector<Types>...> vtype;
-    vtype vectors;
-
-    template<int N, typename T>
-    struct VectorOfType: SameType<T,
-        typename std::tuple_element<N, vtype>::type::value_type>
-    { };
-
-    template <int N, class T, class Tuple,
-              bool Match = false> // this =false is only for clarity
-    struct MatchingField
-    {
-        static std::vector<T>& get(Tuple& tp)
-        {
-            // The "non-matching" version
-            return MatchingField<N+1, T, Tuple,
-                   VectorOfType<N+1, T>::value>::get(tp);
-        }
-    };
-
-    template <int N, class T, class Tuple>
-    struct MatchingField<N, T, Tuple, true>
-    {
-        static std::vector<T>& get(Tuple& tp)
-        {
-            return std::get<N>(tp);
-        }
-    };
-public:
-    template <typename T>
-    std::vector<T>& access()
-    {
-        return MatchingField<0, T, vtype,
-               VectorOfType<0, T>::value>::get(vectors);
-    }
-};*/
-
 
 class ConfigReader
 {
-    public:
-        ConfigReader(const std::string& file_location);
-        bool open(const std::string& file_location);
-        void elaborate();
-        template <typename T>
-        std::vector<T> get(const std::string& name);
-        template <typename T>
-        std::vector<T> get(char* name);
-        bool close();
-        void reload();
-        void print(std::ofstream& s);
+public:
+	ConfigReader(const std::string& file_location);
+	enum CaseType {
+		DontCare,
+		Sensitive,
+		Lower,
+		Upper
+	};
+	ConfigReader(const std::string& file_location, CaseType const& _m_case);
+	bool open(const std::string& file_location);
+	void elaborate();
+	template <typename T>
+	std::vector<T> get(const std::string& name);
+	template <typename T>
+	std::vector<T> get(char* name);
+	template <typename T>
+	void append(char* name, T const& t);
+	template <typename T>
+	void append(std::string const& name, T const& t);
+	template <typename T>
+	void overwrite(char* name, T const& t);
+	template <typename T>
+	void overwrite(std::string const& name, T const& t);
+	template <typename T>
+	void overwrite(char* name, std::vector<T> const& t);
+	template <typename T>
+	void overwrite(std::string const& name, std::vector<T> const& t);
+	bool delete_entry(std::string const& name);
+	bool save();
 
-    private:
-        std::vector<std::string> line_vector;
-        std::unordered_map<std::string, std::vector<std::string> > name_map;
-        std::ifstream file_data;
-        bool is_open=false;
-        bool is_loaded=false;
+	bool close();
+	void reload();
+	void print(std::ostream& os);
+
+	CaseType const m_case = CaseType::DontCare;
+private:
+	std::vector<std::string> read_lines; //the lines read from file
+	std::unordered_map<std::string, std::size_t> name_map; //given a variable name, returns the number of the line containing such variable name in line_vector
+
+	std::vector<std::vector<std::string> > line_vector; //contains the lines in order of appearance, unless the variable_name has already been seen, then it appends
+
+	std::vector<bool> line_has_variable;
+	std::ifstream file_data;
+	std::string file_path;
+	bool is_open = false;
+	bool is_loaded = false;
 };
-
-//https://stackoverflow.com/questions/27941661/generating-one-class-member-per-variadic-template-argument
 #endif // CONFIGREADER_H
